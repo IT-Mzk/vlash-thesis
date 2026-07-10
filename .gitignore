@@ -27,3 +27,8 @@ MANIFEST
 /.deps/
 
 outputs/
+# macOS/Windows junk & local artifacts
+.DS_Store
+.~lock*
+*.tmp
+node_modules/

@@ -1,0 +1,45 @@
+==========================================================================
+ DAX MEASURES cho Power BI  (Đồ án 3 - Chủ đề 2)
+ Cách dùng: trong Power BI, chuột phải FactSales -> New measure ->
+ dán từng đoạn (mỗi measure 1 lần). Định dạng số tiền/% ở tab Measure tools.
+==========================================================================
+
+-- 1) Tổng doanh thu
+Total Revenue = SUM ( FactSales[total_amount] )
+
+-- 2) Số đơn hàng (đếm hóa đơn duy nhất)
+Total Orders = DISTINCTCOUNT ( FactSales[transaction_id] )
+
+-- 3) Tổng số lượng sản phẩm bán ra
+Total Quantity = SUM ( FactSales[quantity] )
+
+-- 4) Giá trị trung bình mỗi đơn
+Avg Order Value = DIVIDE ( [Total Revenue], [Total Orders] )
+
+-- 5a) Doanh thu tháng trước (phụ trợ cho Growth%)
+Revenue PM = CALCULATE ( [Total Revenue], PREVIOUSMONTH ( DimDate[full_date] ) )
+
+-- 5b) % tăng trưởng so với tháng trước  (định dạng: Percentage)
+Revenue Growth % = DIVIDE ( [Total Revenue] - [Revenue PM], [Revenue PM] )
+
+-- 6) Doanh thu lũy kế từ đầu năm (YTD)
+Revenue YTD = TOTALYTD ( [Total Revenue], DimDate[full_date] )
+
+==========================================================================
+ MEASURE MỞ RỘNG (điểm cộng - không bắt buộc)
+==========================================================================
+
+-- Doanh thu trung bình mỗi ngày
+Avg Daily Revenue = DIVIDE ( [Total Revenue], DISTINCTCOUNT ( DimDate[date_key] ) )
+
+-- Tỷ trọng doanh thu của nhóm sản phẩm trên tổng (định dạng: Percentage)
+Revenue % of Total =
+    DIVIDE ( [Total Revenue],
+             CALCULATE ( [Total Revenue], ALL ( DimProduct ) ) )
+
+==========================================================================
+ GHI NHỚ TRƯỚC KHI VIẾT MEASURE:
+ - Vào Model view: nối DimDate/DimTime/DimProduct/DimStore -> FactSales (1 -> *).
+ - Chọn DimDate -> Table tools -> Mark as Date Table -> cột full_date.
+   (Nếu thiếu bước này, Revenue YTD / Growth% sẽ tính sai.)
+==========================================================================

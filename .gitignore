@@ -32,3 +32,4 @@ outputs/
 .~lock*
 *.tmp
 node_modules/
+~$*

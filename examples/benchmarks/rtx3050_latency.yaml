@@ -1,0 +1,19 @@
+type: inference_latency
+policy:
+  type: pi05
+  pretrained_path: lerobot/pi05_base
+  device: cuda
+  dtype: bfloat16
+  state_cond: true
+  compile_model: false
+  fuse_qkv: true
+  fuse_gate_up: true
+dataset:
+  repo_id: lerobot/libero_spatial_image
+  streaming: false
+num_samples: 16
+warmup_steps: 10
+batch_size: 1
+num_workers: 0
+seed: 42
+output_dir: outputs/benchmarks/rtx3050

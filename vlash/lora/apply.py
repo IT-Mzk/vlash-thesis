@@ -188,6 +188,25 @@ def apply_lora(cfg: LoRAConfig, policy: nn.Module, verbose: bool = False) -> Non
                 param.data = param.data.to(compute_dtype)
         logger.info(f"[QLoRA] Cast LoRA adapters to {compute_dtype}")
 
+        # Ensure ALL non-quantized floating params AND buffers use compute_dtype,
+        # so the whole forward pass is dtype-consistent. This avoids the
+        # whack-a-mole of Float-vs-BFloat16 mismatches in layer_norm ("expected
+        # scalar type Float but found BFloat16") and matmul ("mat1 and mat2 must
+        # have the same dtype"). 4-bit quantized base params are uint8 and are
+        # skipped automatically by the is_floating_point() check. Normalization
+        # buffers (mean/std stats) are the usual fp32 culprit and get cast here too.
+        cast_p = 0
+        for _n, _p in peft_model.named_parameters():
+            if _p.is_floating_point() and _p.dtype != compute_dtype:
+                _p.data = _p.data.to(compute_dtype)
+                cast_p += 1
+        cast_b = 0
+        for _n, _b in peft_model.named_buffers():
+            if _b.is_floating_point() and _b.dtype != compute_dtype:
+                _b.data = _b.data.to(compute_dtype)
+                cast_b += 1
+        logger.info(f"[QLoRA] Cast {cast_p} params + {cast_b} buffers to {compute_dtype}")
+
         # Mark policy for QLoRA-aware checkpoint handling
         setattr(policy, "_qlora_enabled", True)
         setattr(policy, "_qlora_compute_dtype", cfg.qlora_compute_dtype)

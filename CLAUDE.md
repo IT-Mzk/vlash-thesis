@@ -2,6 +2,15 @@
 
 ## PROJECT STATUS (updated 2026-07-06 — read this first)
 
+> **2026-08-17 update:** Real π0.5 fine-tune work started on the user's Windows / RTX 3050 6GB
+> machine (WSL2). Env setup is DONE and the π0.5 inference-latency benchmark ran on the RTX 3050:
+> **4546 ms mean / 0.22 FPS** (vs 103 ms on RTX 4090 in the paper, ~44× slower). Full hand-off in
+> **`PROGRESS_finetune_rtx3050.md`**; results in `RESULTS_rtx3050.md`; plan in `FINETUNE_PLAN.md`.
+> NOTE: the GPU environment lives only in WSL2 on Windows — a Mac session can help with thesis
+> writing/analysis but cannot run the training/benchmark. Next step (user to choose): short QLoRA
+> training run for a loss curve, stop and fold the benchmark into the thesis, or re-benchmark with
+> torch.compile.
+
 This folder contains BOTH the VLASH codebase AND the user's bachelor-thesis
 deliverables built on it. Work done so far (on macOS; everything is in files,
 so any Claude instance on any machine can continue):

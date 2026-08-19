@@ -171,6 +171,15 @@ class PI05SuffixEmbedder(nn.Module):
             att_masks: Attention masks [B, T].
             adarms_cond: Conditioning signal for adaRMS [B, D].
         """
+        # QLoRA mixes fp32/bf16: the trainable projections here (modules_to_save)
+        # are bf16, while `time` is sampled in fp32 and the normalized state/actions
+        # may be fp32. Cast all floating inputs to this module's compute dtype to
+        # avoid matmul dtype mismatches ("mat1 and mat2 must have the same dtype").
+        compute_dtype = next(self.action_in_proj.parameters()).dtype
+        if state.is_floating_point():
+            state = state.to(compute_dtype)
+        noisy_actions = noisy_actions.to(compute_dtype)
+
         # Create sinusoidal time embedding
         time_emb = create_sinusoidal_pos_embedding(
             time,
@@ -179,7 +188,7 @@ class PI05SuffixEmbedder(nn.Module):
             max_period=self.config.max_period,
             device=time.device,
         )
-        time_emb = time_emb.to(dtype=time.dtype)
+        time_emb = time_emb.to(dtype=compute_dtype)
         
         # Process time through MLP
         time_emb = self.time_mlp_in(time_emb)
